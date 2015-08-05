@@ -1,13 +1,10 @@
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
-
-#pragma comment(lib, "wsock32.lib")
-#include <MatCom.hpp>
+#include "MatCom.hpp"
 
 int main(int argc, char ** argv)
 {
 	MatCom mc("server");
-	mc.init(12345, "172.18.1.5");
-	VideoCapture cap(10);
+	mc.init(12345, "172.18.1.12");
+	VideoCapture cap(0);
 	Mat frame;
 	namedWindow("sent");
 	for (;;)

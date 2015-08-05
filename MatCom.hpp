@@ -1,3 +1,5 @@
+
+#ifdef _WIN32
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
 
@@ -6,10 +8,19 @@
 
 #include <WinSock2.h>
 #include <WS2tcpip.h>
+#include <opencv2/opencv_lib.hpp>
+#endif
+
+#ifdef linux
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#endif
 
 #include <opencv2/opencv.hpp>
-#include <opencv2/highgui\highgui.hpp>
-#include <opencv2/opencv_lib.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 using namespace std;
 using namespace cv;
@@ -26,11 +37,11 @@ private:
 	int sock, numrcv;
 	vector<uchar> ibuff;
 	struct sockaddr_in addr;
-	int role = -1;
+	int role;
 	//int receiveSize = 65500;
 	char buff[RECEIVESIZE];
 	//vector<unsigned char> ibuff;
-	vector<int> param = vector<int>(2);
+	vector<int> param;
 
 public:
 	Mat receiveMat();
@@ -43,6 +54,7 @@ public:
 
 MatCom::MatCom(string role)
 {
+	param = vector<int>(2);
 	if (role.compare("client") == 0)
 		this->role = CLIENT;
 	else if (role.compare("server") == 0)
@@ -53,8 +65,10 @@ MatCom::MatCom(string role)
 			<< endl;
 		exit(EXIT_FAILURE);
 	}
+#ifdef _WIN32
 	WSADATA data;
 	WSAStartup(MAKEWORD(2, 0), &data);
+#endif
 }
 
 
@@ -117,8 +131,14 @@ void MatCom::sendMat(Mat &dst)
 
 MatCom::~MatCom()
 {
-	delete[] buff;
+	delete &buff;
 	delete receivedMat.ptr();
+#ifdef _WIN32
 	closesocket(sock);
 	WSACleanup();
+#endif
+
+#ifdef linux
+	close(sock);
+#endif
 }
